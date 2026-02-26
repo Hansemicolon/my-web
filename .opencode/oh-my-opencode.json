@@ -1,0 +1,21 @@
+{
+  "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/master/assets/oh-my-opencode.schema.json",
+  "agents": {
+    "oracle": {
+      "model": "openai/gpt-5.2",
+      "description": "Architecture, security, edge cases, deployment constraints"
+    },
+    "frontend-ui-ux-engineer": {
+      "model": "openai/gpt-5.2",
+      "description": "UI/UX, animations (fade-out), component structure"
+    },
+    "librarian": {
+      "model": "openai/gpt-5.2",
+      "description": "Keeps project context tidy, updates docs, ensures constraints"
+    },
+    "explore": {
+      "model": "openai/gpt-5.2",
+      "description": "Investigate best practice, diagnose errors"
+    }
+  }
+}
