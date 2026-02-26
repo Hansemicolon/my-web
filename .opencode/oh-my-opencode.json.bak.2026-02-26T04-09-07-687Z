@@ -1,0 +1,24 @@
+{
+  "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/master/assets/oh-my-opencode.schema.json",
+  "agents": {
+    "Sisyphus": {
+      "model": "anthropic/claude-opus-4-5"
+    },
+    "oracle": {
+      "model": "openai/gpt-5.2",
+      "description": "아키텍처 설계, 코드 리뷰, 전략적 판단"
+    },
+    "librarian": {
+      "model": "google/gemini-3-flash-preview"
+    },
+    "explore": {
+      "model": "google/gemini-3-flash-preview"
+    },
+    "frontend-ui-ux-engineer": {
+      "model": "google/gemini-3-pro-preview"
+    },
+    "document-writer": {
+      "model": "google/gemini-3-flash-preview"
+    }
+  }
+}
