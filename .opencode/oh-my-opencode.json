@@ -1,21 +1,25 @@
 {
   "$schema": "https://raw.githubusercontent.com/code-yeongyu/oh-my-opencode/master/assets/oh-my-opencode.schema.json",
   "agents": {
+    "Sisyphus": {
+      "model": "anthropic/claude-opus-4-5"
+    },
     "oracle": {
       "model": "openai/gpt-5.2",
-      "description": "Architecture, security, edge cases, deployment constraints"
-    },
-    "frontend-ui-ux-engineer": {
-      "model": "openai/gpt-5.2",
-      "description": "UI/UX, animations (fade-out), component structure"
+      "description": "아키텍처 설계, 코드 리뷰, 전략적 판단"
     },
     "librarian": {
-      "model": "openai/gpt-5.2",
-      "description": "Keeps project context tidy, updates docs, ensures constraints"
+      "model": "google/gemini-3-flash-preview"
     },
     "explore": {
-      "model": "openai/gpt-5.2",
-      "description": "Investigate best practice, diagnose errors"
+      "model": "google/gemini-3-flash-preview"
+    },
+    "frontend-ui-ux-engineer": {
+      "model": "google/gemini-3-pro-preview"
+    },
+    "document-writer": {
+      "model": "google/gemini-3-flash-preview"
     }
   }
+출처: https://goddaehee.tistory.com/485 [갓대희의 작은공간:티스토리]
 }
