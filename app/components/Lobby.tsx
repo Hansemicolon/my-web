@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import AdUnit from "@/components/AdUnit";
 
 interface LobbyProps {
   isConnected: boolean;
@@ -109,6 +110,11 @@ export default function Lobby({
           {validationError ?? error}
         </p>
       )}
+
+      {/* Ad Unit */}
+      <div className="w-full mt-4">
+        <AdUnit />
+      </div>
     </div>
   );
 }
