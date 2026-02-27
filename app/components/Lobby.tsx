@@ -48,13 +48,13 @@ export default function Lobby({
         <span
           className={`w-1.5 h-1.5 rounded-full ${
             isConnected
-              ? "bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)]"
+              ? "bg-green-600 shadow-[0_0_4px_rgba(22,163,74,0.35)]"
               : "bg-red-400 shadow-[0_0_6px_rgba(248,113,113,0.5)]"
           }`}
         />
         <span
           className={
-            isConnected ? "text-emerald-400/70" : "text-red-400/70"
+            isConnected ? "text-green-600/70" : "text-red-400/70"
           }
         >
           {isConnected ? "Connected" : "Disconnected"}

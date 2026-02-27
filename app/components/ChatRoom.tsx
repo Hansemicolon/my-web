@@ -1,8 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import type { ChatMessage } from "@/types/socket";
-import MessageBubble from "./MessageBubble";
+import ChatView from "./ChatView";
+import SheetView from "./SheetView";
+import ModeToggle, { type UIMode } from "./ModeToggle";
+
+const MODE_KEY = "ephemeral-ui-mode";
 
 interface ChatRoomProps {
   roomId: string;
@@ -22,12 +26,24 @@ export default function ChatRoom({
   onLeave,
 }: ChatRoomProps) {
   const [input, setInput] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
+  const [mode, setMode] = useState<UIMode>("chat");
 
+  // Hydrate mode from localStorage (client-only)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    const stored = localStorage.getItem(MODE_KEY);
+    if (stored === "chat" || stored === "sheet") {
+      setMode(stored); // eslint-disable-line react-hooks/set-state-in-effect -- one-time hydration from localStorage
+    }
+  }, []);
+
+  function toggleMode() {
+    setMode((prev) => {
+      const next = prev === "chat" ? "sheet" : "chat";
+      localStorage.setItem(MODE_KEY, next);
+      return next;
+    });
+  }
 
   function handleSend() {
     const trimmed = input.trim();
@@ -43,66 +59,76 @@ export default function ChatRoom({
     });
   }
 
+  const isSheet = mode === "sheet";
+
   return (
-    <div className="flex flex-col h-[100dvh] w-full max-w-2xl mx-auto">
+    <div
+      className={`flex flex-col h-[100dvh] w-full max-w-2xl mx-auto transition-colors duration-300 ${
+        isSheet ? "bg-white" : ""
+      }`}
+    >
       {/* Header */}
-      <header className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
+      <header
+        className={`flex items-center justify-between px-5 py-4 border-b transition-colors duration-300 ${
+          isSheet
+            ? "border-green-800/30 bg-green-700 shadow-sm"
+            : "border-white/[0.06] bg-black"
+        }`}
+      >
         <div className="flex items-center gap-3 min-w-0 flex-1">
           <button
             onClick={handleCopyRoomId}
             className="flex items-center gap-2 min-w-0 group"
             title="Copy room ID"
           >
-            <span className="font-mono text-xs text-zinc-500 truncate max-w-[180px] sm:max-w-[280px] group-hover:text-zinc-300 transition-colors">
+            <span
+              className="font-mono text-xs truncate max-w-[140px] sm:max-w-[220px] text-white/60 group-hover:text-white/80 transition-colors"
+            >
               {roomId}
             </span>
-            <span className="text-[10px] text-zinc-600 group-hover:text-zinc-400 transition-colors shrink-0">
+            <span
+              className="text-[10px] text-white/40 group-hover:text-white/60 transition-colors shrink-0"
+            >
               {copied ? "✓" : "⧉"}
             </span>
           </button>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <ModeToggle mode={mode} onToggle={toggleMode} />
           <span
             className={`text-xs px-2.5 py-1 rounded-full border ${
               clientCount >= 2
-                ? "text-emerald-400/80 border-emerald-400/20 bg-emerald-400/[0.06]"
-                : "text-zinc-500 border-white/[0.06] bg-white/[0.02]"
+                ? "text-white border-white/20 bg-white/10"
+                : "text-white/60 border-white/15 bg-white/[0.05]"
             }`}
           >
             {clientCount}/2
           </span>
           <button
             onClick={onLeave}
-            className="text-xs text-zinc-600 hover:text-red-400/80 transition-colors"
+            className="text-xs text-white/60 hover:text-red-300 transition-colors"
           >
             Leave
           </button>
         </div>
       </header>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-1">
-        {messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-zinc-600 text-sm text-center leading-relaxed">
-              Messages appear here and vanish in 60s...
-            </p>
-          </div>
-        ) : (
-          messages.map((msg) => (
-            <MessageBubble
-              key={msg.id}
-              message={msg}
-              isOwn={msg.sender === socketId}
-            />
-          ))
-        )}
-        <div ref={messagesEndRef} />
-      </div>
+      {/* View area */}
+      {mode === "chat" ? (
+        <ChatView messages={messages} socketId={socketId} />
+      ) : (
+        <SheetView messages={messages} socketId={socketId} />
+      )}
 
       {/* Input */}
-      <div className="px-5 py-4 border-t border-white/[0.06]">
+      <div
+        className={`px-5 py-4 border-t transition-colors duration-300 ${
+          isSheet
+            ? "border-green-900/30 bg-green-800"
+            : "border-white/[0.06] bg-black"
+        }`}
+      >
         <div className="flex gap-3">
           <input
             type="text"
@@ -116,12 +142,16 @@ export default function ChatRoom({
             }}
             placeholder="Type a message..."
             maxLength={500}
-            className="flex-1 py-3 px-4 rounded-xl bg-white/[0.04] border border-white/[0.06] text-zinc-200 text-sm placeholder:text-zinc-600 focus:outline-none focus:border-white/[0.15] focus:bg-white/[0.06] transition-all duration-200"
+            className="flex-1 py-3 px-4 rounded-xl bg-white border border-transparent text-gray-800 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all duration-200"
           />
           <button
             onClick={handleSend}
             disabled={!input.trim()}
-            className="px-5 py-3 rounded-xl bg-white/[0.06] border border-white/[0.08] text-zinc-400 text-sm hover:bg-white/[0.1] hover:text-zinc-200 transition-all duration-200 disabled:opacity-20 disabled:cursor-not-allowed"
+            className={`px-5 py-3 rounded-xl border text-sm transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed ${
+              isSheet
+                ? "bg-green-900 border-green-900 text-white hover:bg-green-950"
+                : "bg-zinc-800 border-zinc-700 text-zinc-200 hover:bg-zinc-700"
+            }`}
           >
             Send
           </button>

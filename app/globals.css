@@ -38,3 +38,22 @@ body {
     filter: blur(3px);
   }
 }
+
+/* ── Spreadsheet mode: cell fade-out ── */
+/* Same 스르륵 curve but fades text color and bg instead of full opacity, so grid lines stay crisp */
+@keyframes sheet-cell-fade {
+  0% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 0.45;
+  }
+  92% {
+    opacity: 0.1;
+    filter: blur(0.5px);
+  }
+  100% {
+    opacity: 0;
+    filter: blur(1.5px);
+  }
+}
