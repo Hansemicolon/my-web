@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Ephemeral Chat",
   description: "Private 1:1 chat rooms. No login. No logs. Messages vanish in 60 seconds.",
+  verification: {
+    google: "0tF688tGvB6wcvTOaABILjZPoHZcXvhaSFjaHeQEIQU",
+  },
 };
 
 export default function RootLayout({
