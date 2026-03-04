@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import AdUnit from "@/components/AdUnit";
 
 interface LobbyProps {
@@ -21,7 +21,12 @@ export default function Lobby({
 }: LobbyProps) {
   const [joinId, setJoinId] = useState("");
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [adHeight, setAdHeight] = useState(100); // Default fallback height
   const currentError = validationError ?? error;
+
+  const handleAdHeightChange = useCallback((height: number) => {
+    setAdHeight(height);
+  }, []);
 
   function handleJoin() {
     const trimmed = joinId.trim();
@@ -33,8 +38,16 @@ export default function Lobby({
     onJoinRoom(trimmed);
   }
 
+  // Calculate dynamic padding: ad height + wrapper padding (16px top/bottom) + safe area
+  const dynamicPaddingBottom = adHeight + 32; // 16px padding on each side of the ad wrapper
+
   return (
-    <div className="relative flex min-h-[100dvh] w-full items-center justify-center px-5 pb-[132px] pt-10 sm:px-6 sm:pt-12">
+    <div 
+      className="relative flex min-h-[100dvh] w-full items-center justify-center px-5 pt-10 sm:px-6 sm:pt-12"
+      style={{
+        paddingBottom: `calc(${dynamicPaddingBottom}px + env(safe-area-inset-bottom, 0px))`,
+      }}
+    >
       <div className="flex w-full items-center justify-center">
         <div className="flex w-full max-w-md flex-col items-center gap-10">
           {/* Title */}
@@ -120,10 +133,16 @@ export default function Lobby({
         </div>
       </div>
 
-      {/* Ad Unit */}
-      <div className="fixed inset-x-0 bottom-0 w-full px-5 pb-4 sm:px-6">
+      {/* Ad Unit - pointer-events:none on wrapper, AdUnit manages its own pointer-events */}
+      <div 
+        className="fixed inset-x-0 bottom-0 w-full px-5 pb-4 sm:px-6"
+        style={{ 
+          pointerEvents: "none",
+          paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))",
+        }}
+      >
         <div className="mx-auto w-full max-w-md">
-          <AdUnit />
+          <AdUnit onHeightChange={handleAdHeightChange} />
         </div>
       </div>
     </div>
