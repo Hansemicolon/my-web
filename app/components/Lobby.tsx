@@ -21,6 +21,7 @@ export default function Lobby({
 }: LobbyProps) {
   const [joinId, setJoinId] = useState("");
   const [validationError, setValidationError] = useState<string | null>(null);
+  const currentError = validationError ?? error;
 
   function handleJoin() {
     const trimmed = joinId.trim();
@@ -33,87 +34,97 @@ export default function Lobby({
   }
 
   return (
-    <div className="flex flex-col items-center gap-10 w-full max-w-md mx-auto px-6">
-      {/* Title */}
-      <div className="text-center">
-        <h1 className="text-4xl font-light tracking-tight text-zinc-100 mb-3">
-          Ephemeral
-        </h1>
-        <p className="text-sm text-zinc-500 leading-relaxed max-w-xs mx-auto">
-          Private rooms. No logs. Messages dissolve in 60&nbsp;seconds.
-        </p>
+    <div className="relative flex min-h-[100dvh] w-full items-center justify-center px-5 pb-[132px] pt-10 sm:px-6 sm:pt-12">
+      <div className="flex w-full items-center justify-center">
+        <div className="flex w-full max-w-md flex-col items-center gap-10">
+          {/* Title */}
+          <div className="text-center">
+            <h1 className="mb-3 text-4xl font-light tracking-tight text-zinc-100">
+              Ephemeral - 60 Seconds
+            </h1>
+            <p className="mx-auto max-w-xs text-sm leading-relaxed text-zinc-500">
+              Private rooms. No logs. Messages dissolve in 60&nbsp;seconds.
+            </p>
+          </div>
+
+          {/* Connection indicator */}
+          <div className="flex min-h-5 items-center gap-2 text-xs">
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${
+                isConnected
+                  ? "bg-green-600 shadow-[0_0_4px_rgba(22,163,74,0.35)]"
+                  : "bg-red-400 shadow-[0_0_6px_rgba(248,113,113,0.5)]"
+              }`}
+            />
+            <span
+              className={
+                isConnected ? "text-green-600/70" : "text-red-400/70"
+              }
+            >
+              {isConnected ? "Connected" : "Disconnected"}
+            </span>
+          </div>
+
+          {/* Create */}
+          <button
+            onClick={onCreateRoom}
+            disabled={!isConnected}
+            className="w-full rounded-xl border border-white/[0.08] bg-white/[0.06] py-3.5 text-sm font-medium text-zinc-200 backdrop-blur-sm transition-all duration-200 hover:border-white/[0.15] hover:bg-white/[0.1] disabled:cursor-not-allowed disabled:opacity-30"
+          >
+            Create Room
+          </button>
+
+          {/* Divider */}
+          <div className="flex w-full items-center gap-4">
+            <div className="h-px flex-1 bg-white/[0.06]" />
+            <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-600">
+              or join
+            </span>
+            <div className="h-px flex-1 bg-white/[0.06]" />
+          </div>
+
+          {/* Join */}
+          <div className="flex w-full flex-col gap-3">
+            <input
+              type="text"
+              value={joinId}
+              onChange={(e) => {
+                setJoinId(e.target.value);
+                setValidationError(null);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleJoin();
+              }}
+              placeholder="Paste room ID..."
+              className="w-full rounded-xl border border-white/[0.06] bg-white/[0.04] px-4 py-3 font-mono text-[13px] text-sm text-zinc-200 placeholder:text-zinc-600 transition-all duration-200 focus:bg-white/[0.06] focus:border-white/[0.15] focus:outline-none"
+            />
+            <button
+              onClick={handleJoin}
+              disabled={!isConnected || !joinId.trim()}
+              className="w-full rounded-xl border border-white/[0.06] bg-white/[0.04] py-3 text-sm text-zinc-400 transition-all duration-200 hover:bg-white/[0.08] hover:text-zinc-200 disabled:cursor-not-allowed disabled:opacity-30"
+            >
+              Join Room
+            </button>
+          </div>
+
+          {/* Errors */}
+          <div className="flex min-h-5 items-center justify-center">
+            <p
+              className={`text-center text-xs text-red-400/80 transition-opacity duration-150 ${
+                currentError ? "opacity-100" : "opacity-0"
+              }`}
+            >
+              {currentError ?? "\u00A0"}
+            </p>
+          </div>
+        </div>
       </div>
-
-      {/* Connection indicator */}
-      <div className="flex items-center gap-2 text-xs">
-        <span
-          className={`w-1.5 h-1.5 rounded-full ${
-            isConnected
-              ? "bg-green-600 shadow-[0_0_4px_rgba(22,163,74,0.35)]"
-              : "bg-red-400 shadow-[0_0_6px_rgba(248,113,113,0.5)]"
-          }`}
-        />
-        <span
-          className={
-            isConnected ? "text-green-600/70" : "text-red-400/70"
-          }
-        >
-          {isConnected ? "Connected" : "Disconnected"}
-        </span>
-      </div>
-
-      {/* Create */}
-      <button
-        onClick={onCreateRoom}
-        disabled={!isConnected}
-        className="w-full py-3.5 rounded-xl bg-white/[0.06] border border-white/[0.08] text-zinc-200 text-sm font-medium hover:bg-white/[0.1] hover:border-white/[0.15] transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed backdrop-blur-sm"
-      >
-        Create Room
-      </button>
-
-      {/* Divider */}
-      <div className="flex items-center gap-4 w-full">
-        <div className="flex-1 h-px bg-white/[0.06]" />
-        <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-600">
-          or join
-        </span>
-        <div className="flex-1 h-px bg-white/[0.06]" />
-      </div>
-
-      {/* Join */}
-      <div className="w-full flex flex-col gap-3">
-        <input
-          type="text"
-          value={joinId}
-          onChange={(e) => {
-            setJoinId(e.target.value);
-            setValidationError(null);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") handleJoin();
-          }}
-          placeholder="Paste room ID..."
-          className="w-full py-3 px-4 rounded-xl bg-white/[0.04] border border-white/[0.06] text-zinc-200 text-sm placeholder:text-zinc-600 font-mono text-[13px] focus:outline-none focus:border-white/[0.15] focus:bg-white/[0.06] transition-all duration-200"
-        />
-        <button
-          onClick={handleJoin}
-          disabled={!isConnected || !joinId.trim()}
-          className="w-full py-3 rounded-xl bg-white/[0.04] border border-white/[0.06] text-zinc-400 text-sm hover:bg-white/[0.08] hover:text-zinc-200 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed"
-        >
-          Join Room
-        </button>
-      </div>
-
-      {/* Errors */}
-      {(error || validationError) && (
-        <p className="text-red-400/80 text-xs text-center">
-          {validationError ?? error}
-        </p>
-      )}
 
       {/* Ad Unit */}
-      <div className="w-full mt-4">
-        <AdUnit />
+      <div className="fixed inset-x-0 bottom-0 w-full px-5 pb-4 sm:px-6">
+        <div className="mx-auto w-full max-w-md">
+          <AdUnit />
+        </div>
       </div>
     </div>
   );

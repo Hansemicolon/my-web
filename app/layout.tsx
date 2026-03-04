@@ -13,8 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ephemeral Chat",
-  description: "Private 1:1 chat rooms. No login. No logs. Messages vanish in 60 seconds.",
+  title: "60초대화 - 1분 후 사라지는 익명 대화방",
+  description: "60초대화는 1분 후 자동으로 사라지는 익명 채팅 서비스입니다.",
+  keywords: ["60초대화", "익명 채팅", "사라지는 채팅", "1분 채팅"],
   verification: {
     google: "0tF688tGvB6wcvTOaABILjZPoHZcXvhaSFjaHeQEIQU",
   },
