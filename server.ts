@@ -112,7 +112,7 @@ app.prepare().then(() => {
     });
 
     // --- send-message ---
-    socket.on("send-message", ({ content }) => {
+    socket.on("send-message", ({ content, clientMessageId }) => {
       const roomId = socket.data.roomId;
       if (!roomId) return;
 
@@ -130,6 +130,7 @@ app.prepare().then(() => {
         content: trimmed,
         createdAt: now,
         expiresAt: now + MESSAGE_TTL,
+        clientMessageId, // Include for client-side deduplication
       };
 
       const roomMessages = messages.get(roomId);

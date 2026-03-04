@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getSocket } from "@/lib/socket";
 import type { ChatMessage } from "@/types/socket";
+import { v4 as uuidv4 } from "uuid";
 
 export type ChatPhase = "lobby" | "chat";
 
@@ -17,6 +18,9 @@ export function useSocket() {
   // Keep a ref so callbacks always see fresh messages
   const messagesRef = useRef(messages);
   useEffect(() => { messagesRef.current = messages; }, [messages]);
+  
+  // Track pending client message IDs to deduplicate server echoes
+  const pendingClientIdsRef = useRef<Set<string>>(new Set());
 
   // ------------------------------------------------------------------
   // Connection lifecycle
@@ -32,9 +36,27 @@ export function useSocket() {
       setIsConnected(false);
     }
     function onMessage(msg: ChatMessage) {
-      setMessages((prev) => [...prev, msg]);
+      // If this is our own message echoed back, replace the optimistic version
+      if (msg.clientMessageId && pendingClientIdsRef.current.has(msg.clientMessageId)) {
+        pendingClientIdsRef.current.delete(msg.clientMessageId);
+        // Replace optimistic message with server-confirmed message
+        setMessages((prev) => 
+          prev.map((m) => 
+            m.clientMessageId === msg.clientMessageId ? msg : m
+          )
+        );
+        return;
+      }
+      setMessages((prev) => {
+        // Also check if message ID already exists (safety net)
+        if (prev.some((m) => m.id === msg.id)) {
+          return prev;
+        }
+        return [...prev, msg];
+      });
     }
     function onMessageExpired(messageId: string) {
+      // Filter by server ID or by clientMessageId match (for optimistic messages)
       setMessages((prev) => prev.filter((m) => m.id !== messageId));
     }
     function onUserJoined({ clientCount: c }: { clientCount: number }) {
@@ -97,7 +119,25 @@ export function useSocket() {
 
   const sendMessage = useCallback((content: string) => {
     const socket = getSocket();
-    socket.emit("send-message", { content });
+    const clientMessageId = uuidv4();
+    
+    // Track this ID so we can deduplicate the server echo
+    pendingClientIdsRef.current.add(clientMessageId);
+    
+    // Optimistically add message to UI immediately
+    const now = Date.now();
+    const optimisticMsg: ChatMessage = {
+      id: `pending-${clientMessageId}`,
+      roomId: "", // Will be filled by server
+      sender: socket.id ?? "",
+      content: content.trim(),
+      createdAt: now,
+      expiresAt: now + 60_000,
+      clientMessageId,
+    };
+    setMessages((prev) => [...prev, optimisticMsg]);
+    
+    socket.emit("send-message", { content, clientMessageId });
   }, []);
 
   const leaveRoom = useCallback(() => {

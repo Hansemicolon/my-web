@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import type { ChatMessage } from "@/types/socket";
 import ChatView from "./ChatView";
 import SheetView from "./SheetView";
 import ModeToggle, { type UIMode } from "./ModeToggle";
 
 const MODE_KEY = "ephemeral-ui-mode";
+const SEND_DEBOUNCE_MS = 200;
 
 interface ChatRoomProps {
   roomId: string;
@@ -28,6 +29,9 @@ export default function ChatRoom({
   const [input, setInput] = useState("");
   const [copied, setCopied] = useState(false);
   const [mode, setMode] = useState<UIMode>("chat");
+  
+  // Guard against rapid duplicate sends (200ms debounce)
+  const lastSendTimeRef = useRef<number>(0);
 
   // Hydrate mode from localStorage (client-only)
   useEffect(() => {
@@ -45,12 +49,27 @@ export default function ChatRoom({
     });
   }
 
-  function handleSend() {
+  // Unified send handler with debounce guard
+  const handleSend = useCallback(() => {
     const trimmed = input.trim();
     if (!trimmed) return;
+    
+    // Prevent duplicate sends within SEND_DEBOUNCE_MS
+    const now = Date.now();
+    if (now - lastSendTimeRef.current < SEND_DEBOUNCE_MS) {
+      return;
+    }
+    lastSendTimeRef.current = now;
+    
     onSendMessage(trimmed);
     setInput("");
-  }
+  }, [input, onSendMessage]);
+  
+  // Form submit handler - the single source of truth for sending messages
+  const handleSubmit = useCallback((e: React.FormEvent) => {
+    e.preventDefault();
+    handleSend();
+  }, [handleSend]);
 
   function handleCopyRoomId() {
     navigator.clipboard.writeText(roomId).then(() => {
@@ -129,23 +148,17 @@ export default function ChatRoom({
             : "border-white/[0.06] bg-black"
         }`}
       >
-        <div className="flex gap-3">
+        <form onSubmit={handleSubmit} className="flex gap-3">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value.slice(0, 500))}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
             placeholder="Type a message..."
             maxLength={500}
             className="flex-1 py-3 px-4 rounded-xl bg-white border border-transparent text-gray-800 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 transition-all duration-200"
           />
           <button
-            onClick={handleSend}
+            type="submit"
             disabled={!input.trim()}
             className={`px-5 py-3 rounded-xl border text-sm transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed ${
               isSheet
@@ -155,7 +168,7 @@ export default function ChatRoom({
           >
             Send
           </button>
-        </div>
+        </form>
       </div>
     </div>
   );

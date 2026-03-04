@@ -9,6 +9,7 @@ export interface ChatMessage {
   content: string;
   createdAt: number; // Date.now()
   expiresAt: number; // createdAt + 60_000
+  clientMessageId?: string; // Client-generated UUID for deduplication
 }
 
 /** Server-only room state. */
@@ -39,7 +40,7 @@ export interface ClientToServerEvents {
     roomId: string,
     callback: (res: { success: boolean; error?: string }) => void,
   ) => void;
-  "send-message": (data: { content: string }) => void;
+  "send-message": (data: { content: string; clientMessageId: string }) => void;
 }
 
 /** Inter-server events (unused in single-server setup). */
