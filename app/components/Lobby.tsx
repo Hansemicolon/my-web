@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import Link from "next/link";
 import AdUnit from "@/components/AdUnit";
 
 interface LobbyProps {
@@ -130,6 +131,27 @@ export default function Lobby({
               {currentError ?? "\u00A0"}
             </p>
           </div>
+
+          <nav
+            aria-label="Site information links"
+            className="flex w-full flex-wrap items-center justify-center gap-x-4 gap-y-2 border-t border-white/[0.06] pt-4 text-xs text-zinc-500"
+          >
+            <Link href="/about" className="transition-colors hover:text-zinc-300">
+              About
+            </Link>
+            <Link href="/how-to-use" className="transition-colors hover:text-zinc-300">
+              How to Use
+            </Link>
+            <Link href="/faq" className="transition-colors hover:text-zinc-300">
+              FAQ
+            </Link>
+            <Link href="/privacy" className="transition-colors hover:text-zinc-300">
+              Privacy Policy
+            </Link>
+            <Link href="/terms" className="transition-colors hover:text-zinc-300">
+              Terms of Service
+            </Link>
+          </nav>
         </div>
       </div>
 
