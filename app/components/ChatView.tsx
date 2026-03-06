@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import type { ChatMessage } from "@/types/socket";
 import MessageBubble from "./MessageBubble";
 
@@ -16,8 +16,16 @@ export default function ChatView({ messages, socketId }: ChatViewProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const handleCopyCut = useCallback((e: React.ClipboardEvent) => {
+    e.preventDefault();
+  }, []);
+
   return (
-    <div className="flex-1 overflow-y-auto px-5 py-4 space-y-1">
+    <div
+      className="flex-1 overflow-y-auto select-none px-5 py-4 space-y-1"
+      onCopy={handleCopyCut}
+      onCut={handleCopyCut}
+    >
       {messages.length === 0 ? (
         <div className="flex items-center justify-center h-full">
           <p className="text-zinc-600 text-sm text-center leading-relaxed">

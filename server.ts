@@ -151,9 +151,16 @@ app.prepare().then(() => {
       if (!room) return;
 
       room.clients.delete(socket.id);
-      room.lastActiveAt = Date.now();
+      socket.data.roomId = null;
 
-      io.to(roomId).emit("user-left", { clientCount: room.clients.size });
+      if (room.clients.size === 0) {
+        // Last participant left — delete room and messages immediately
+        rooms.delete(roomId);
+        messages.delete(roomId);
+      } else {
+        room.lastActiveAt = Date.now();
+        io.to(roomId).emit("user-left", { clientCount: room.clients.size });
+      }
     });
   });
 

@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import type { ChatMessage } from "@/types/socket";
+import { v4 as uuidv4 } from "uuid";
 import ChatView from "./ChatView";
 import SheetView from "./SheetView";
 import ModeToggle, { type UIMode } from "./ModeToggle";
+import WatermarkOverlay from "./WatermarkOverlay";
+import { usePrivacyGuards } from "@/hooks/usePrivacyGuards";
 
 const MODE_KEY = "ephemeral-ui-mode";
 const SEND_DEBOUNCE_MS = 200;
@@ -32,6 +35,12 @@ export default function ChatRoom({
   
   // Guard against rapid duplicate sends (200ms debounce)
   const lastSendTimeRef = useRef<number>(0);
+
+  // Stable session ID for watermark (generated once per mount)
+  const sessionId = useMemo(() => uuidv4(), []);
+
+  // Privacy guards: hotkey blocking, PrintScreen detection
+  const { toast, printScreenOverlay } = usePrivacyGuards();
 
   // Hydrate mode from localStorage (client-only)
   useEffect(() => {
@@ -81,6 +90,7 @@ export default function ChatRoom({
   const isSheet = mode === "sheet";
 
   return (
+    <>
     <div
       className={`flex flex-col h-[100dvh] w-full max-w-2xl mx-auto transition-colors duration-300 ${
         isSheet ? "bg-white" : ""
@@ -171,5 +181,27 @@ export default function ChatRoom({
         </form>
       </div>
     </div>
+
+      {/* Privacy: watermark overlay */}
+      <WatermarkOverlay roomId={roomId} sessionId={sessionId} />
+
+      {/* Privacy: PrintScreen detection overlay */}
+      {printScreenOverlay && (
+        <div className="pointer-events-none fixed inset-0 z-[10000] flex items-center justify-center bg-black/80 backdrop-blur-md">
+          <p className="text-lg font-medium text-white/80">
+            Screenshots are discouraged
+          </p>
+        </div>
+      )}
+
+      {/* Privacy: toast */}
+      {toast && (
+        <div className="pointer-events-none fixed bottom-24 left-1/2 z-[10001] -translate-x-1/2">
+          <div className="rounded-lg border border-white/10 bg-zinc-900/95 px-4 py-2 text-xs text-zinc-300 shadow-lg backdrop-blur">
+            {toast}
+          </div>
+        </div>
+      )}
+    </>
   );
 }
